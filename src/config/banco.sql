@@ -6,6 +6,3 @@ CREATE TABLE convidado (
     email VARCHAR(50) NOT NULL UNIQUE,
     telefone VARCHAR(25) NOT NULL UNIQUE
 );
-
-ALTER TABLE convidado 
-ADD CONSTRAINT email_unico UNIQUE (email);
