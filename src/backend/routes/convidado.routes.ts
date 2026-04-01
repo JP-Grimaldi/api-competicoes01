@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createConvidado, updateConvidado, deleteConvidado, getConvidados, getConvidadosById } from "../controller/convidadoController";
+import { createConvidado, updateConvidado, deleteConvidado, getConvidados, getConvidadosById } from "../../backend/controller/convidadoController";
 
 const router = Router()
 

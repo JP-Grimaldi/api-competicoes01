@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { db } from '../config/db';
-import { CreateConvidadoDTO, UpdateConvidadoDTO } from '../dto/convidado.dto';
+import { CreateConvidadoDTO, UpdateConvidadoDTO } from '.././dto/convidado.dto';
 import { Convidado } from "../interfaces/convidado.interface";
 
 export async function getConvidados(req: Request, res: Response) {

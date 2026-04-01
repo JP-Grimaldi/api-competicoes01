@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Convidados</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="header">
+        <h1>Bem-Vindo ao Gerenciador de Convidados!</h1>
+        <p id="mensagem-status"></p>
+    </header>
+
+    <main class="container">
+
+        <section class="cria-card">
+            <h2>Cadastro de Convidados:</h2>
+            <h4>Preencha com suas informações:</h4>
+            <form id="form-criar-convidado" method="post">
+
+                <label for="criar-nome">Nome: </label>
+                <input type="text" id="criar-nome" placeholder="Digite seu nome" required/>
+
+                <label for="criar-email">E-mail: </label>
+                <input type="text" id="criar-email" placeholder="Digite seu e-mail" required/>
+
+                <label for="criar-telefone">Telefone: </label>
+                <input type="text" id="criar-telefone" placeholder="Digite seu telefone" required/>
+                
+                <div class="acoes-post">
+                    <button type="submit" class="btn">Criar Convidado</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="lista-card">
+            <div class="lista-convidados">
+                <h2>Lista de Convidados:</h2>
+                <h4>Clique no botão para listar os convidados:</h4>
+                <div id="lista-convidados"></div>
+            </div>
+            <div id="acoes-get-convidados" class="btn-lista-convidados">
+                <button type="button" id="btn-listar-convidados">Listar convidados</button>
+            </div>
+        </section>
+
+        <section class="atualiza-card">
+            <div class="atualiza-convidados">
+                <h2>Atualização de Convidados:</h2>
+                <h4>Altere os dados de um usuário já cadastrado:</h4>
+            </div>
+
+            <form id="form-atualizar-convidado" method="post">
+    
+                <label for="atualizar-id">ID do Convidado: </label>
+                <input type="text" id="atualizar-id" placeholder="Digite o ID" required/>
+
+                <label for="atualizar-nome">Nome: </label>
+                <input type="text" id="atualizar-nome" placeholder="Digite o nome" required/>
+
+                <label for="atualizar-email">E-mail: </label>
+                <input type="text" id="atualizar-email" placeholder="Digite o e-mail" required/>
+
+                <label for="atualizar-telefone">Telefone: </label>
+                <input type="text" id="atualizar-telefone" placeholder="Digite o telefone" required/>
+                
+                <div class="acoes-put">
+                    <button type="submit" class="btn">Atualizar Convidado</button>
+                </div>
+            </form>
+        </section>
+        
+        <section class="deleta-card">
+            <div class="deleta-convidados">
+                <h2>Remoção de Convidados</h2>
+                <h4>Clique no usuário que deseja deletar:</h4>
+            </div>
+            <div id="lista-convidados-remover" class="lista-convidados-para-remover"></div>
+        </section>
+
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>
