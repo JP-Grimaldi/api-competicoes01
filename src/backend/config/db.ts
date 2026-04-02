@@ -6,5 +6,3 @@ export const db = mysql.createPool({
     password: 'senacrs',
     database: 'gerenciador_convidados'
 });
-
-module.exports = db

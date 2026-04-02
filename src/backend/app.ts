@@ -1,17 +1,26 @@
 import express from 'express';
+import cors from 'cors';
 import path from 'path';
-import convidadoRoutes from './routes/convidado.routes';
+import router from './routes/convidado.routes';
 
 const app = express();
-const port = 3000;
 
+app.use(cors());
 app.use(express.json());
-app.use(express.static(path.resolve(__dirname, '../frontend')));
-app.use('/convidados', convidadoRoutes);
+
+app.use('/convidados', router);
+
+// caminho da pasta do front
+const frontendPath = path.join(__dirname, '..', 'frontend');
+
+// servir arquivos estáticos
+app.use(express.static(frontendPath));
+
+// abrir o index.html quando acessar /
 app.get('/', (_req, res) => {
-    res.sendFile(path.resolve(__dirname, '../frontend/index.html'));
+  res.sendFile(path.join(frontendPath, 'index.html'));
 });
 
-app.listen(port, ()=>{
-    console.log(`Servidor rodando na porta ${port}`);
+app.listen(3000, () => {
+  console.log('Servidor rodando em http://localhost:3000');
 });

@@ -1,154 +1,185 @@
 const API = "/convidados";
 
-const formCriar = document.getElementById("form-criar-convidado");
-const formAtualizar = document.getElementById("form-atualizar-convidado");
-const botaoListar = document.getElementById("btn-listar-convidados");
-const lista = document.getElementById("lista-convidados");
-const listaRemover = document.getElementById("lista-convidados-remover");
-const mensagem = document.getElementById("mensagem-status");
+const formCriar = document.getElementById('form-criar');
+const formAtualizar = document.getElementById('form-atualizar');
+const btnListar = document.getElementById('btn-listar');
+const listaConvidados = document.getElementById('lista-convidados');
+const listaRemocao = document.getElementById('lista-remocao');
+const mensagemCriar = document.getElementById('mensagem-criar');
+const mensagemAtualizar = document.getElementById('mensagem-atualizar');
+const mensagemRemover = document.getElementById('mensagem-remover');
 
-function mostrarMensagem(texto, isErro = false) {
-  if (!mensagem) return;
-  mensagem.textContent = texto;
-  mensagem.style.color = isErro ? "#b00020" : "#0a7d32";
+function limparMensagens() {
+  if (mensagemCriar) mensagemCriar.textContent = '';
+  if (mensagemAtualizar) mensagemAtualizar.textContent = '';
+  if (mensagemRemover) mensagemRemover.textContent = '';
 }
 
-function limparMensagem() {
-  if (!mensagem) return;
-  mensagem.textContent = "";
+function mostrarMensagem(elemento, texto, tipo = 'ok') {
+  if (!elemento) return;
+  elemento.textContent = texto;
+  elemento.className = `mensagem ${tipo}`;
 }
 
-function escaparHtml(valor) {
-  return String(valor ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/\"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+function preencherFormularioAtualizacao(convidado) {
+  document.getElementById('atualizar-id').value = convidado.id;
+  document.getElementById('atualizar-nome').value = convidado.nome;
+  document.getElementById('atualizar-email').value = convidado.email;
+  document.getElementById('atualizar-telefone').value = convidado.telefone;
+  window.scrollTo({ top: document.body.scrollHeight / 3, behavior: 'smooth' });
 }
 
-async function tratarResposta(res) {
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    throw new Error(data.message || data.error || "Erro na requisição");
-  }
-  return data;
+function criarItemLista(convidado) {
+  const convidadoTexto = JSON.stringify(convidado).replace(/"/g, '&quot;');
+
+  return `
+    <li class="item-convidado">
+      <div>
+        <strong>#${convidado.id}</strong> - ${convidado.nome}<br>
+        <span>${convidado.email}</span><br>
+        <span>${convidado.telefone}</span>
+      </div>
+      <div class="acoes-item">
+        <button type="button" class="btn btn-secundario" onclick="editarConvidado(${convidadoTexto})">Editar</button>
+        <button type="button" class="btn btn-perigo" onclick="deletarConvidado(${convidado.id})">Excluir</button>
+      </div>
+    </li>
+  `;
 }
 
 async function listarConvidados() {
-  limparMensagem();
+  limparMensagens();
+
   try {
     const res = await fetch(API);
-    const convidados = await tratarResposta(res);
+    const dados = await res.json();
 
-    if (!Array.isArray(convidados) || convidados.length === 0) {
-      lista.innerHTML = "<p>Nenhum convidado cadastrado.</p>";
-      listaRemover.innerHTML = "<p>Nenhum convidado para remover.</p>";
+    if (!res.ok) {
+      throw new Error(dados.message || dados.error || 'Erro ao listar convidados');
+    }
+
+    listaConvidados.innerHTML = '';
+    listaRemocao.innerHTML = '';
+
+    if (!Array.isArray(dados) || dados.length === 0) {
+      listaConvidados.innerHTML = '<li class="vazio">Nenhum convidado cadastrado ainda.</li>';
+      listaRemocao.innerHTML = '<p class="vazio">Nenhum convidado para remover.</p>';
       return;
     }
 
-    lista.innerHTML = convidados.map(c => `
-      <div class="item-convidado">
-        <strong>ID ${c.id}</strong><br>
-        ${escaparHtml(c.nome)}<br>
-        ${escaparHtml(c.email)}<br>
-        ${escaparHtml(c.telefone)}<br>
-        <button type="button" onclick="prepararEdicao(${c.id}, '${escaparHtml(c.nome)}', '${escaparHtml(c.email)}', '${escaparHtml(c.telefone)}')">Editar</button>
-      </div>
-    `).join("");
-
-    listaRemover.innerHTML = convidados.map(c => `
-      <div class="item-convidado">
-        <strong>ID ${c.id}</strong> - ${escaparHtml(c.nome)}
-        <button type="button" onclick="deletarConvidado(${c.id})">Excluir</button>
-      </div>
-    `).join("");
-  } catch (erro) {
-    mostrarMensagem(erro.message, true);
+    dados.forEach((convidado) => {
+      listaConvidados.innerHTML += criarItemLista(convidado);
+      listaRemocao.innerHTML += `
+        <p class="linha-remocao">
+          <strong>#${convidado.id}</strong> - ${convidado.nome}
+          <button type="button" class="btn btn-perigo" onclick="deletarConvidado(${convidado.id})">Excluir</button>
+        </p>
+      `;
+    });
+  } catch (error) {
+    listaConvidados.innerHTML = '<li class="vazio">Não foi possível carregar os convidados.</li>';
+    listaRemocao.innerHTML = '<p class="vazio">Não foi possível carregar os convidados.</p>';
+    mostrarMensagem(mensagemRemover, error.message, 'erro');
+    console.error(error);
   }
 }
 
 async function criarConvidado(event) {
   event.preventDefault();
-  limparMensagem();
+  limparMensagens();
 
-  const nome = document.getElementById("criar-nome").value.trim();
-  const email = document.getElementById("criar-email").value.trim();
-  const telefone = document.getElementById("criar-telefone").value.trim();
-
-  if (!nome || !email || !telefone) {
-    mostrarMensagem("Preencha nome, e-mail e telefone.", true);
-    return;
-  }
+  const nome = document.getElementById('criar-nome').value.trim();
+  const email = document.getElementById('criar-email').value.trim();
+  const telefone = document.getElementById('criar-telefone').value.trim();
 
   try {
     const res = await fetch(API, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, email, telefone })
     });
 
-    const data = await tratarResposta(res);
-    mostrarMensagem(data.message || "Convidado criado com sucesso.");
+    const dados = await res.json();
+
+    if (!res.ok) {
+      throw new Error(dados.message || dados.error || 'Erro ao criar convidado');
+    }
+
+    mostrarMensagem(mensagemCriar, 'Convidado criado com sucesso!', 'ok');
     formCriar.reset();
     await listarConvidados();
-  } catch (erro) {
-    mostrarMensagem(erro.message, true);
+  } catch (error) {
+    mostrarMensagem(mensagemCriar, error.message, 'erro');
+    console.error(error);
   }
 }
 
-function prepararEdicao(id, nome, email, telefone) {
-  document.getElementById("atualizar-id").value = id;
-  document.getElementById("atualizar-nome").value = nome;
-  document.getElementById("atualizar-email").value = email;
-  document.getElementById("atualizar-telefone").value = telefone;
-  mostrarMensagem(`Convidado ${id} carregado para edição.`);
+function editarConvidado(convidado) {
+  limparMensagens();
+  preencherFormularioAtualizacao(convidado);
 }
 
 async function atualizarConvidado(event) {
   event.preventDefault();
-  limparMensagem();
+  limparMensagens();
 
-  const id = document.getElementById("atualizar-id").value.trim();
-  const nome = document.getElementById("atualizar-nome").value.trim();
-  const email = document.getElementById("atualizar-email").value.trim();
-  const telefone = document.getElementById("atualizar-telefone").value.trim();
+  const id = document.getElementById('atualizar-id').value.trim();
+  const nome = document.getElementById('atualizar-nome').value.trim();
+  const email = document.getElementById('atualizar-email').value.trim();
+  const telefone = document.getElementById('atualizar-telefone').value.trim();
 
-  if (!id || !nome || !email || !telefone) {
-    mostrarMensagem("Preencha ID, nome, e-mail e telefone para atualizar.", true);
+  if (!id) {
+    mostrarMensagem(mensagemAtualizar, 'Escolha um convidado na lista antes de atualizar.', 'erro');
     return;
   }
 
   try {
     const res = await fetch(`${API}/${id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nome, email, telefone })
     });
 
-    const data = await tratarResposta(res);
-    mostrarMensagem(data.message || "Convidado atualizado com sucesso.");
+    const dados = await res.json();
+
+    if (!res.ok) {
+      throw new Error(dados.message || dados.error || 'Erro ao atualizar convidado');
+    }
+
+    mostrarMensagem(mensagemAtualizar, 'Dados atualizados com sucesso!', 'ok');
     await listarConvidados();
-  } catch (erro) {
-    mostrarMensagem(erro.message, true);
+  } catch (error) {
+    mostrarMensagem(mensagemAtualizar, error.message, 'erro');
+    console.error(error);
   }
 }
 
 async function deletarConvidado(id) {
-  limparMensagem();
+  limparMensagens();
+
+  const confirmar = window.confirm('Tem certeza que deseja excluir este convidado?');
+  if (!confirmar) return;
+
   try {
-    const res = await fetch(`${API}/${id}`, { method: "DELETE" });
-    const data = await tratarResposta(res);
-    mostrarMensagem(data.message || "Convidado removido com sucesso.");
+    const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+    const dados = await res.json();
+
+    if (!res.ok) {
+      throw new Error(dados.message || dados.error || 'Erro ao remover convidado');
+    }
+
+    mostrarMensagem(mensagemRemover, 'Convidado removido com sucesso!', 'ok');
     await listarConvidados();
-  } catch (erro) {
-    mostrarMensagem(erro.message, true);
+  } catch (error) {
+    mostrarMensagem(mensagemRemover, error.message, 'erro');
+    console.error(error);
   }
 }
 
-formCriar?.addEventListener("submit", criarConvidado);
-formAtualizar?.addEventListener("submit", atualizarConvidado);
-botaoListar?.addEventListener("click", listarConvidados);
-window.prepararEdicao = prepararEdicao;
+formCriar.addEventListener('submit', criarConvidado);
+formAtualizar.addEventListener('submit', atualizarConvidado);
+btnListar.addEventListener('click', listarConvidados);
+window.editarConvidado = editarConvidado;
 window.deletarConvidado = deletarConvidado;
-window.addEventListener("DOMContentLoaded", listarConvidados);
+
+listarConvidados();

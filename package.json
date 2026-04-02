@@ -2,7 +2,7 @@
   "name": "api-convidados",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/backend/app.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/backend/app.ts",
     "start": "node dist/backend/app.js",
@@ -13,6 +13,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "cors": "^2.8.6",
     "express": "^5.2.1",
     "knex": "^3.2.6",
     "mysql2": "^3.20.0"
