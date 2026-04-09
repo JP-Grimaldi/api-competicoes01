@@ -38,6 +38,7 @@ export async function createConvidado(req: Request, res: Response) {
     try {
         const body: CreateConvidadoDTO = req.body;
         const { nome, email, telefone } = body;
+        const status = body.status ?? true;
 
         if (!nome || !email || !telefone) {
             return res.status(400).json({ message: 'Nome, e-mail e telefone são obrigatórios' });
@@ -62,8 +63,8 @@ export async function createConvidado(req: Request, res: Response) {
         }
 
         const [result] = await db.query<ResultSetHeader>(
-            'INSERT INTO convidado (nome, email, telefone) VALUES (?, ?, ?)',
-            [nome, email, telefone]
+            'INSERT INTO convidado (nome, email, telefone, status) VALUES (?, ?, ?, ?)',
+            [nome, email, telefone, status]
         );
 
         return res.status(201).json({
@@ -83,10 +84,12 @@ export async function updateConvidado(req: Request, res: Response) {
       return res.status(400).json({ message: 'ID inválido' });
     }
 
-    const body: UpdateConvidadoDTO = req.body;
-    const nome = body.nome?.trim();
-    const email = body.email?.trim();
-    const telefone = body.telefone?.trim();
+    const { nome, email, telefone, status } = req.body;
+
+    await db.query(
+      'UPDATE convidado SET nome = ?, email = ?, telefone = ?, status = ? WHERE id = ?',
+      [nome, email, telefone, status, id]
+    );
 
     const [convidadoExistente] = await db.query<(Convidado & RowDataPacket)[]>('SELECT * FROM convidado WHERE id = ?', [id]);
     if (convidadoExistente.length === 0) {
@@ -109,8 +112,14 @@ export async function updateConvidado(req: Request, res: Response) {
 
     const atual = convidadoExistente[0];
     await db.query<ResultSetHeader>(
-      'UPDATE convidado SET nome = ?, email = ?, telefone = ? WHERE id = ?',
-      [nome || atual.nome, email || atual.email, telefone || atual.telefone, id]
+            'UPDATE convidado SET nome = ?, email = ?, telefone = ?, status = ? WHERE id = ?',
+      [
+        nome || atual.nome,
+        email || atual.email,
+        telefone || atual.telefone,
+        status !== undefined ? status : Boolean(atual.status),
+        id
+      ]
     );
 
     return res.status(200).json({ message: 'Convidado atualizado' });

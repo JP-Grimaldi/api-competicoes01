@@ -10,8 +10,7 @@
 <body>
     <header class="header">
         <h1>Gerenciador de Convidados</h1>
-        <p>Projeto simples para cadastrar, listar, editar e excluir convidados.</p>
-    </header>
+        </header>
 
     <main class="container">
         <section class="card cria-card">
@@ -26,6 +25,12 @@
 
                 <label for="criar-telefone">Telefone</label>
                 <input type="tel" id="criar-telefone" placeholder="Digite o telefone" required/>
+
+                <label for="criar-status">Status</label>
+                <select id="criar-status">
+                    <option value="true" selected>Confirmado</option>
+                    <option value="false">Pendente</option>
+                </select>
                 
                 <div class="acoes-post">
                     <button type="submit" class="btn">Criar convidado</button>
@@ -63,6 +68,12 @@
 
                 <label for="atualizar-telefone">Telefone</label>
                 <input type="tel" id="atualizar-telefone" placeholder="Digite o telefone" required/>
+                
+                <label for="atualizar-status">Status</label>
+                <select id="atualizar-status">
+                    <option value="true">Confirmado</option>
+                    <option value="false">Pendente</option>
+                </select>
                 
                 <div class="acoes-put">
                     <button type="submit" class="btn">Salvar alteração</button>

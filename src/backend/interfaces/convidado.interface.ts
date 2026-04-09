@@ -3,4 +3,5 @@ export interface Convidado {
     "nome": string,
     "email": string,
     "telefone": string
+    "status": boolean
 }

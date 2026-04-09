@@ -21,23 +21,29 @@ function mostrarMensagem(elemento, texto, tipo = 'ok') {
   elemento.className = `mensagem ${tipo}`;
 }
 
+function traduzirStatus(status) {
+  return status ? 'Confirmado' : 'Pendente';
+}
+
 function preencherFormularioAtualizacao(convidado) {
   document.getElementById('atualizar-id').value = convidado.id;
   document.getElementById('atualizar-nome').value = convidado.nome;
   document.getElementById('atualizar-email').value = convidado.email;
   document.getElementById('atualizar-telefone').value = convidado.telefone;
-  window.scrollTo({ top: document.body.scrollHeight / 3, behavior: 'smooth' });
+  document.getElementById('atualizar-status').value = String(Boolean(convidado.status));
 }
 
 function criarItemLista(convidado) {
   const convidadoTexto = JSON.stringify(convidado).replace(/"/g, '&quot;');
+  const statusTexto = traduzirStatus(Boolean(convidado.status));
 
   return `
     <li class="item-convidado">
       <div>
         <strong>#${convidado.id}</strong> - ${convidado.nome}<br>
         <span>${convidado.email}</span><br>
-        <span>${convidado.telefone}</span>
+        <span>${convidado.telefone}</span><br>
+        <span>Status: ${statusTexto}</span>
       </div>
       <div class="acoes-item">
         <button type="button" class="btn btn-secundario" onclick="editarConvidado(${convidadoTexto})">Editar</button>
@@ -68,10 +74,11 @@ async function listarConvidados() {
     }
 
     dados.forEach((convidado) => {
+      const statusTexto = traduzirStatus(Boolean(convidado.status));
       listaConvidados.innerHTML += criarItemLista(convidado);
       listaRemocao.innerHTML += `
         <p class="linha-remocao">
-          <strong>#${convidado.id}</strong> - ${convidado.nome}
+          <strong>#${convidado.id}</strong> - ${convidado.nome} (${statusTexto})
           <button type="button" class="btn btn-perigo" onclick="deletarConvidado(${convidado.id})">Excluir</button>
         </p>
       `;
@@ -91,12 +98,13 @@ async function criarConvidado(event) {
   const nome = document.getElementById('criar-nome').value.trim();
   const email = document.getElementById('criar-email').value.trim();
   const telefone = document.getElementById('criar-telefone').value.trim();
+  const status = document.getElementById('criar-status').value === 'true';
 
   try {
     const res = await fetch(API, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, email, telefone })
+      body: JSON.stringify({ nome, email, telefone, status })
     });
 
     const dados = await res.json();
@@ -106,7 +114,7 @@ async function criarConvidado(event) {
     }
 
     mostrarMensagem(mensagemCriar, 'Convidado criado com sucesso!', 'ok');
-    formCriar.reset();
+    document.getElementById('criar-status').value = 'false';
     await listarConvidados();
   } catch (error) {
     mostrarMensagem(mensagemCriar, error.message, 'erro');
@@ -127,6 +135,7 @@ async function atualizarConvidado(event) {
   const nome = document.getElementById('atualizar-nome').value.trim();
   const email = document.getElementById('atualizar-email').value.trim();
   const telefone = document.getElementById('atualizar-telefone').value.trim();
+  const status = document.getElementById('atualizar-status').value === 'true';
 
   if (!id) {
     mostrarMensagem(mensagemAtualizar, 'Escolha um convidado na lista antes de atualizar.', 'erro');
@@ -137,7 +146,7 @@ async function atualizarConvidado(event) {
     const res = await fetch(`${API}/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nome, email, telefone })
+      body: JSON.stringify({ nome, email, telefone, status })
     });
 
     const dados = await res.json();
